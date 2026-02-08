@@ -1,19 +1,28 @@
 'use client';
 
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import TransactionLogs from './TransactionLogs';
 
+function SignIn() { 
 
-function SignIn() {
+    const[isOpenModal, setIsOpenModal] = useState(false);
 
     const Text = {
         "title": "TaxPal",
         "message": "Sign in to your account to continue",
     }
+
+    const TransactionLabels ={
+        heading: "Record New Income",
+        message: "Add detais about your income to track finances better.",
+        title: "Add Income"
+    }
+    
 
     return (
         <div className='min-h-screen h-screen w-full flex items-center justify-center '>
@@ -39,6 +48,7 @@ function SignIn() {
                         />
                     </div>
                     <Button
+                    onClick={()=> setIsOpenModal(true)}
                     className='bg-blue-500 text-white mt-2 md:mt-3 text-xs md:text-sm lg:text-md xl:text-lg 2xl:text-xl'
                     >Sign in</Button>
 
@@ -47,6 +57,11 @@ function SignIn() {
                     </div>
                 </div>
             </div>
+            {
+                isOpenModal &&(
+                    <TransactionLogs heading={TransactionLabels.heading} message={TransactionLabels.message} title={TransactionLabels.title}/>
+                )
+            }
         </div>
     )
 }
