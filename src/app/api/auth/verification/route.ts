@@ -1,6 +1,7 @@
 import UserModel from "@/models/userModel";
 import dbConnect from "@/lib/dbConnect";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+import OTPModel from "@/models/otpModel";
 
 export async function POST(request: Request){
     await dbConnect();
@@ -24,11 +25,24 @@ export async function POST(request: Request){
                 message: 'Failed to send verification email.'
             }, {status: 500});
         }
+
+        const newOTP = await OTPModel.create({
+            email,
+            otp: verificationCode,
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        });
+        if(!newOTP){
+            return Response.json({
+                success: false,
+                message: 'Failed to generate OTP.'
+            }, {status: 500});
+        }
         return Response.json({
             success: true,
-            message: 'Verification email sent successfully.'
+            message: 'Verification email sent successfully.',
+            otp: verificationCode,
         }, {status: 200});
-        
+
     } catch (error) {
         console.error('Error verifying email:', error);
         return Response.json({

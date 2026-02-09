@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 import { TransactionLogType } from '@/types/transactionLogType'
 // import {useForm} from 'react-hook-form';

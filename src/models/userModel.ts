@@ -5,6 +5,7 @@ export interface User extends Document{
     password: string;
     fullName: string;
     email: string;
+    token: string;
     verificationCode: string;
     isVerified: boolean;
     verificationCodeExpiery: Date;
@@ -33,18 +34,22 @@ const UserSchema : Schema<User> = new Schema({
         match: [/\S+@\S+\.\S+/, 'Email is invalid'],
         required: [true, "Email is required"]
     },
-    verificationCode:{
+    token: {
         type: String,
-        required: [true, "Verification Code is required."]
+        required: [true, 'Token is required.']
     },
+    // verificationCode:{
+    //     type: String,
+    //     required: [true, "Verification Code is required."]
+    // },
     isVerified:{
         type: Boolean,
         default: false
     },
-    verificationCodeExpiery:{
-        type: Date,
-        required: [true, 'Verification code expiry is required']
-    },
+    // verificationCodeExpiery:{
+    //     type: Date,
+    //     required: [true, 'Verification code expiry is required']
+    // },
     country:{
         type: String,
         required: [true, 'Country is required']
