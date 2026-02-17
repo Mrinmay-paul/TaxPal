@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import OTPModel from "@/models/otpModel";
 import { generateToken } from "@/lib/generateToken";
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 export async function POST(request: Response){
     await dbConnect();
@@ -32,28 +35,42 @@ export async function POST(request: Response){
                 {status: 400}
             );
         }
-
-        const existingOTP = await OTPModel.findOne({
-            email,
-            otp,
-            expiresAt: { $gt: new Date() }
-        })
-
-        if(!existingOTP){
+        const storedOTP = await redis.get(`otp:${email}`);
+        if(!storedOTP){
             return Response.json({
                 success: false,
-                message: 'Invalid or expired OTP.'
+                message: 'OTP expired or not found. Please request a new one.'
             }, {status: 400});
         }
-        if(existingOTP?.otp !== otp){
+
+        if(storedOTP !== otp){
             return Response.json({
                 success: false,
-                message: 'Invalid Otp.'
-            }, {status: 400})
+                message: 'Invalid OTP. Please try again.'
+            }, {status: 400});
         }
+        // const existingOTP = await OTPModel.findOne({
+        //     email,
+        //     otp,
+        //     expiresAt: { $gt: new Date() }
+        // })
+
+        // if(!existingOTP){
+        //     return Response.json({
+        //         success: false,
+        //         message: 'Invalid or expired OTP.'
+        //     }, {status: 400});
+        // }
+        // if(existingOTP?.otp !== otp){
+        //     return Response.json({
+        //         success: false,
+        //         message: 'Invalid Otp.'
+        //     }, {status: 400})
+        // }
+        await redis.del(`otp:${email}`); 
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const token = generateToken({_id: existingOTP._id.toString(), email});
+        const token = generateToken({userName , email});
         const newUser = await UserModel.create({
             userName,
             fullName,
@@ -65,12 +82,21 @@ export async function POST(request: Response){
         })
         await OTPModel.deleteOne({email});
 
-        return Response.json({
+        const response = NextResponse.json({
             success: true,
             message: 'User registered successfully.',   
             user: newUser
         }, {status: 201});  
 
+        response.cookies.set('token', token,{
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60, // 7 days
+            path: '/',
+        });
+
+        return response;
     } catch (error) {
         console.error('Error during user registration:', error);
         return Response.json({

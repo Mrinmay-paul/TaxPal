@@ -1,14 +1,18 @@
 'use client'
 
-import React from 'react'
+import React,{ useState } from 'react'
 import { House, BookType, BadgeDollarSign, NotebookText   } from 'lucide-react';
 import { link } from 'fs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import ConfirmationModel from './ConfirmationModel';
+import { set } from 'mongoose';
+import { authServices } from '@/services/authServices';
 
 function SideNavbar() {
     const [isActive, setIsActive] = React.useState(1);
     const router = useRouter();
+    const [isLogoutModelOpen, setIsLogoutModelOpen] = useState(false);
 
     const navItems = [
         {id: 1, name: 'Dashboard', icon : <House/>, link: '/view/dashboard'},
@@ -16,6 +20,17 @@ function SideNavbar() {
         {id: 3, name: 'Tax Estimator', icon: <BookType/>, link: '/view/tax-estimator'},
         {id: 4, name: 'Reports', icon: <NotebookText/>, link: '/view/reports'},
     ];
+
+    const handleLogout = async() => {
+        // Clear the token cookie
+        try{
+            const response = await authServices.logout();
+            console.log('Logout resp:',response.data);
+            router.push('/user/sign-in');
+        }catch(error){
+            console.error('Error during logout:', error);
+        }
+    }
 
     return (
         <main>
@@ -58,11 +73,20 @@ function SideNavbar() {
                             </div>
                             <div className='flex flex-row gap-2'>
                                 <button className='w-full bg-gray-200 text-gray-700 py-2 rounded-md mt-4'>Settings</button>
-                                <button className='w-full bg-red-500 text-white py-2 rounded-md mt-4'>Logout</button>
+                                <button 
+                                onClick={()=> setIsLogoutModelOpen(true)}
+                                className='w-full bg-red-500 text-white py-2 rounded-md mt-4'>Logout</button>
                             </div>
                         </div>
                     </div>
                 </nav>
+                <ConfirmationModel 
+                    title="Logout"
+                    message="Are you sure you want to logout?"
+                    isOpen={isLogoutModelOpen}
+                    onClose={() => setIsLogoutModelOpen(false)}
+                    onConfirm={handleLogout}
+                />
             </aside>
 
         </main>

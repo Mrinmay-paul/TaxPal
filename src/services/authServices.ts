@@ -6,4 +6,5 @@ export const authServices =  {
     signUp:(data: any)=> api.post(API_END_POINTS.auth.signup, data),
     login:(data: any)=> api.post(API_END_POINTS.auth.login, data),
     sendVerificationMail:(data: any)=> api.post(API_END_POINTS.auth.sendVerificationMail, data),
+    logout:()=> api.post(API_END_POINTS.auth.logout),
 }

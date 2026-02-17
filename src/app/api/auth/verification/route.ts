@@ -2,6 +2,9 @@ import UserModel from "@/models/userModel";
 import dbConnect from "@/lib/dbConnect";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import OTPModel from "@/models/otpModel";
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 export async function POST(request: Request){
     await dbConnect();
@@ -25,18 +28,18 @@ export async function POST(request: Request){
                 message: 'Failed to send verification email.'
             }, {status: 500});
         }
-
-        const newOTP = await OTPModel.create({
-            email,
-            otp: verificationCode,
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-        });
-        if(!newOTP){
-            return Response.json({
-                success: false,
-                message: 'Failed to generate OTP.'
-            }, {status: 500});
-        }
+        await redis.set(`otp:${email}`, verificationCode, 'EX', 15 * 60);
+        // const newOTP = await OTPModel.create({
+        //     email,
+        //     otp: verificationCode,
+        //     expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        // });
+        // if(!newOTP){
+        //     return Response.json({
+        //         success: false,
+        //         message: 'Failed to generate OTP.'
+        //     }, {status: 500});
+        // }
         return Response.json({
             success: true,
             message: 'Verification email sent successfully.',

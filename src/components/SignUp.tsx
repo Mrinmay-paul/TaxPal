@@ -36,6 +36,10 @@ function SignUp() {
             setLoading(true);
             const response = await authServices.signUp(data);
             console.log('Signup resp:',response.data);
+            if(response.data.success){
+                //document.cookie = `token=${response.data.token}; path=/; max-age=3600`; // Set token cookie for 1 hour
+                window.location.href = '/view/dashboard'; // Redirect to dashboard after successful sign-up
+            }
         } catch (error) {
             console.error('Error during sign up:', error);
         } finally {

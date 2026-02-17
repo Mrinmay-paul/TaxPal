@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export function proxy(request: NextRequest){
-    // const token = request.cookies.get('token')?.value;
-    const token = localStorage.getItem('token');
-    const isAuthPage = request.nextUrl.pathname.startsWith('/user/login') || request.nextUrl.pathname.startsWith('/user/sign-up');
+    const token = request.cookies.get('token')?.value;
+    //const token = localStorage.getItem('token');
+    const isAuthPage = request.nextUrl.pathname.startsWith('/user/sign-in') || request.nextUrl.pathname.startsWith('/user/sign-up');
 
     if(!token && !isAuthPage){
-        return NextResponse.redirect(new URL('/user/login', request.url));
+        return NextResponse.redirect(new URL('/user/sign-in', request.url));
     }
 
     if(token && isAuthPage){
@@ -22,7 +22,7 @@ export function proxy(request: NextRequest){
 export const config = {
     matcher: [
         '/view/:path*',
-        '/login',
-        '/sign-up',
+        '/user/sign-in',
+        '/user/sign-up',
     ]
 }
